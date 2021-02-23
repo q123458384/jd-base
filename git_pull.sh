@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
+
 ## 文件路径、脚本网址、文件版本以及各种环境的判断
 ShellDir=${JD_DIR:-$(cd $(dirname $0); pwd)}
 [[ ${JD_DIR} ]] && ShellJd=jd || ShellJd=${ShellDir}/jd.sh
 LogDir=${ShellDir}/log
 [ ! -d ${LogDir} ] && mkdir -p ${LogDir}
 ScriptsDir=${ShellDir}/scripts
-Scripts2Dir=${ShellDir}/scripts2
 ConfigDir=${ShellDir}/config
 FileConf=${ConfigDir}/config.sh
 FileDiy=${ConfigDir}/diy.sh
 FileConfSample=${ShellDir}/sample/config.sh.sample
 ListCron=${ConfigDir}/crontab.list
 ListCronLxk=${ScriptsDir}/docker/crontab_list.sh
-ListCronShylocks=${Scripts2Dir}/docker/crontab_list.sh
 ListTask=${LogDir}/task.list
 ListJs=${LogDir}/js.list
 ListJsAdd=${LogDir}/js-add.list
@@ -22,12 +21,22 @@ ContentNewTask=${ShellDir}/new_task
 ContentDropTask=${ShellDir}/drop_task
 SendCount=${ShellDir}/send_count
 isTermux=${ANDROID_RUNTIME_ROOT}${ANDROID_ROOT}
-
-### 自己修改部分begin ###
 ScriptsURL=git@gitee.com:lxk0301/jd_scripts
-WhichDep=$(grep "/jd-base" "${ShellDir}/.git/config")
 ShellURL=https://gitee.com/crosscc/jd-base
-## 更新shell脚本
+
+## 更新crontab，gitee服务器同一时间限制5个链接，因此每个人更新代码必须错开时间，每次执行git_pull随机生成。
+## 每天只更新两次,(分.时.延迟)为随机cron
+function Update_Cron {
+  if [ -f ${ListCron} ]; then
+    RanHour=$(((RANDOM % 6)+7))
+    ranH=$(((RANDOM % 6)+14))
+    RanMin=$((${RANDOM} % 60))
+    RanSleep=$((${RANDOM} % 56))
+    H="${RanHour},${ranH}"
+    perl -i -pe "s|.+(bash git_pull.+)|${RanMin} ${H} \* \* \* sleep ${RanSleep} && \1|" ${ListCron}
+    crontab ${ListCron}
+  fi
+}
 function Git_PullShell {
   echo -e "更新shell脚本，原地址：${ShellURL}\n"
   cd ${ShellDir}
@@ -35,32 +44,9 @@ function Git_PullShell {
   ExitStatusShell=$?
   git reset --hard origin/master
 }
-### 自己修改部分end 另外315行开始还有一段修改 ###
-
-## 更新crontab，gitee服务器同一时间限制5个链接，因此每个人更新代码必须错开时间，每次执行git_pull随机生成。
-## 每天次数随机，更新时间随机，更新秒数随机，至少6次，至多12次，大部分为8-10次，符合正态分布。
-function Update_Cron {
-  if [ -f ${ListCron} ]; then
-    RanMin=$((${RANDOM} % 60))
-    RanSleep=$((${RANDOM} % 56))
-    RanHourArray[0]=$((${RANDOM} % 3))
-    for ((i=1; i<14; i++)); do
-      j=$(($i - 1))
-      tmp=$((${RANDOM} % 3 + ${RanHourArray[j]} + 2))
-      [[ ${tmp} -lt 24 ]] && RanHourArray[i]=${tmp} || break
-    done
-    RanHour=${RanHourArray[0]}
-    for ((i=1; i<${#RanHourArray[*]}; i++)); do
-      RanHour="${RanHour},${RanHourArray[i]}"
-    done
-    perl -i -pe "s|.+(bash git_pull.+)|${RanMin} ${RanHour} \* \* \* sleep ${RanSleep} && \1|" ${ListCron}
-    crontab ${ListCron}
-  fi
-}
 
 ## 克隆scripts
 function Git_CloneScripts {
-  # echo -e "克隆LXK9301脚本，原地址：${ScriptsURL}\n"
   git clone -b master ${ScriptsURL} ${ScriptsDir}
   ExitStatusScripts=$?
   echo
@@ -68,7 +54,6 @@ function Git_CloneScripts {
 
 ## 更新scripts
 function Git_PullScripts {
-  # echo -e "更新LXK9301脚本，原地址：${ScriptsURL}\n"
   cd ${ScriptsDir}
   git fetch --all
   ExitStatusScripts=$?
@@ -114,7 +99,7 @@ function Change_ALL {
   fi
 }
 
-## 检测文件：LXK9301/jd_scripts 仓库中的 docker/crontab_list.sh
+## 检测文件：LXK9301/jd_scripts 仓库中的 docker/crontab_list.sh，和 shylocks/Loon 仓库中的 docker/crontab_list.sh
 ## 检测定时任务是否有变化，此函数会在Log文件夹下生成四个文件，分别为：
 ## task.list    crontab.list中的所有任务清单，仅保留脚本名
 ## js.list      上述检测文件中用来运行js脚本的清单（去掉后缀.js，非运行脚本的不会包括在内）
@@ -277,7 +262,7 @@ function Add_Cron {
       then
         echo "4 0,9 * * * bash ${ShellJd} ${Cron}" >> ${ListCron}
       else
-        cat ${ListCronLxk} | grep -E "\/${Cron}\." | perl -pe "s|(^.+)node */scripts/(j[drx]_\w+)\.js.+|\1bash ${ShellJd} \2|" >> ${ListCron}
+        cat ${ListCronLxk}| grep -E "\/${Cron}\." | perl -pe "s|(^.+)node */scripts/(j[drx]_\w+)\.js.+|\1bash ${ShellJd} \2|" >> ${ListCron}
       fi
     done
 
@@ -310,11 +295,10 @@ if [ "${TZ}" = "UTC" ]; then
   echo -n "北京时间："
   echo $(date -d "8 hour" "+%Y-%m-%d %H:%M:%S")
 fi
-echo -e "\nSHELL脚本目录：${ShellDir}\n"										 
-echo -e "\nJS脚本目录：${ScriptsDir}\n"
+echo -e "\nSHELL脚本目录：${ShellDir}\n"
+echo -e "JS脚本目录：${ScriptsDir}\n"
 echo -e "--------------------------------------------------------------\n"
 
-### 自己修改部分begin ###
 ## 更新shell脚本、检测配置文件版本并将sample/config.sh.sample复制到config目录下
 Git_PullShell && Update_Cron
 VerConfSample=$(grep " Version: " ${FileConfSample} | perl -pe "s|.+v((\d+\.?){3})|\1|")
@@ -328,14 +312,14 @@ then
 else
   echo -e "\nshell脚本更新失败，请检查原因后再次运行git_pull.sh，或等待定时任务自动再次运行git_pull.sh...\n"
 fi
-### 自己修改部分end ###
-
 ## 更新crontab
 [[ $(date "+%-H") -le 2 ]] && Update_Cron
-
 ## 克隆或更新js脚本
-[ -f ${ScriptsDir}/package.json ] && PackageListOld=$(cat ${ScriptsDir}/package.json)
-[ -d ${ScriptsDir}/.git ] && Git_PullScripts || Git_CloneScripts
+if [ ${ExitStatusShell} -eq 0 ]; then
+  echo -e "--------------------------------------------------------------\n"
+  [ -f ${ScriptsDir}/package.json ] && PackageListOld=$(cat ${ScriptsDir}/package.json)
+  [ -d ${ScriptsDir}/.git ] && Git_PullScripts || Git_CloneScripts
+fi
 
 ## 执行各函数
 if [[ ${ExitStatusScripts} -eq 0 ]]

@@ -61,24 +61,30 @@ function Combin_Sub {
 ## 组合Cookie、Token与互助码
 function Combin_All {
   export JD_COOKIE=$(Combin_Sub Cookie)
+  #东东农场(jd_fruit.js)
   export FRUITSHARECODES=$(Combin_Sub ForOtherFruit)
+  #东东萌宠(jd_pet.js)
   export PETSHARECODES=$(Combin_Sub ForOtherPet)
+  #种豆得豆(jd_plantBean.js)
   export PLANT_BEAN_SHARECODES=$(Combin_Sub ForOtherBean)
+  #京喜工厂(jd_dreamFactory.js)
   export DREAM_FACTORY_SHARE_CODES=$(Combin_Sub ForOtherDreamFactory)
+  #东东工厂(jd_jdfactory.js)
   export DDFACTORY_SHARECODES=$(Combin_Sub ForOtherJdFactory)
+  #京东赚赚(jd_jdzz.js)
   export JDZZ_SHARECODES=$(Combin_Sub ForOtherJdzz)
+  #crazyJoy(jd_crazy_joy.js)
   export JDJOY_SHARECODES=$(Combin_Sub ForOtherJoy)
+  #惊喜农场(jd_jxnc.js)
   export JXNC_SHARECODES=$(Combin_Sub ForOtherJxnc)
+  #京喜农场TOKEN
   export JXNCTOKENS=$(Combin_Sub TokenJxnc)
+  #口袋书店(jd_bookshop.js)
   export BOOKSHOP_SHARECODES=$(Combin_Sub ForOtherBookShop)
+  #签到领现金(jd_cash.js)
   export JD_CASH_SHARECODES=$(Combin_Sub ForOtherCash)
-  export JDNIAN_SHARECODES=$(Combin_Sub ForOtherNian)
-  export JDNIANPK_SHARECODES=$(Combin_Sub ForOtherNianPk)
-  export JDSXSY_SHARECODES=$(Combin_Sub ForOtherImmortal)
+  #闪购盲盒(jd_sgmh.js)
   export JDSGMH_SHARECODES=$(Combin_Sub ForOtherSgmh)
-  export JSMOBILEFESTIVAL_SHARECODES=$(Combin_Sub ForOtherJdMobileFestival)
-  export JD818_SHARECODES=$(Combin_Sub ForOtherJd818)
-  export JDNY_SHARECODES=$(Combin_Sub ForOtherNY)
 }
 
 ## 转换JD_BEAN_SIGN_STOP_NOTIFY或JD_BEAN_SIGN_NOTIFY_SIMPLE
