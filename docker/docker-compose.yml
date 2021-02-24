@@ -20,7 +20,7 @@ services:
 
   # 第2个容器
   jd2:
-    image: q123458384/jd:gitee 
+    image: q123458384/jd 
     container_name: jd2
     restart: always
     tty: true
@@ -37,7 +37,7 @@ services:
 
   # 第3个容器，以此类推
   jd3:
-    image: q123458384/jd:gitee 
+    image: q123458384/jd 
     container_name: jd3
     restart: always
     tty: true

@@ -38,7 +38,6 @@ if [ ! -s ${JD_DIR}/config/auth.json ]; then
   cp -fv ${JD_DIR}/sample/auth.json ${JD_DIR}/config/auth.json
   echo
 fi
-
 echo -e "========================3. 启动挂机程序========================\n"
 if [[ ${ENABLE_HANGUP} == true ]]; then
   . ${JD_DIR}/config/config.sh
