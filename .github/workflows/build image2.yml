@@ -1,4 +1,4 @@
-name: 构建JD-BASE镜像
+name: 构建xmly镜像
 on:
   #防止fork乱用action设置只能手动触发构建
   workflow_dispatch:
@@ -26,8 +26,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./docker/Dockerfile
+          file: ./Dockerfile
           platforms: linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
           push: true
           tags: |
-            q123458384/jd:latest
+            q123458384/xmly_speed:latest
